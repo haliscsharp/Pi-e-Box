@@ -9,12 +9,9 @@ import time
 
 time.sleep(3)
 
-# authentication
-import pyotp
-# IO
-import RPi.GPIO as GPIO
-# RFID
-from mfrc522 import SimpleMFRC522
+import pyotp # authentication
+import RPi.GPIO as GPIO # IO
+from mfrc522 import SimpleMFRC522 # RFID
 
 SERVER = "pop.gmail.com"
 USER  = "adauthentication@gmail.com"
@@ -180,7 +177,7 @@ try:
 				# wrong RFID
 				gON(LED_R)
 				time.sleep(2)
-				gOFF(LED_G)
+				gOFF(LED_R)
 except:
 	print("something went wrong")
 finally:
