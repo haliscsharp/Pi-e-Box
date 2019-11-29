@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # mail + general
+import poplib
 import smtplib
 import string, random
 import StringIO, rfc822
@@ -9,9 +10,12 @@ import time
 
 time.sleep(3)
 
-import pyotp # authentication
-import RPi.GPIO as GPIO # IO
-from mfrc522 import SimpleMFRC522 # RFID
+# authentication
+import pyotp
+# IO
+import RPi.GPIO as GPIO
+# RFID
+from mfrc522 import SimpleMFRC522
 
 SERVER = "pop.gmail.com"
 USER  = "adauthentication@gmail.com"
@@ -54,9 +58,31 @@ try:
 	while (True):
 		if (closed):
 			# waiting for RFID read
-			id, text = reader.read()
-			
-			if(id==39583897861 or id==584189945031):
+			nfcId, text = reader.read()
+			if(nfcId==1019974132615):
+				# joker card
+				gON(LED_G)
+				
+				# open relay for 3 sec
+				gON(RELAY)
+				time.sleep(3)
+				gOFF(RELAY)
+				
+				gOFF(LED_G)
+				
+				closed=False
+				
+				# send email
+				smtpserver=smtplib.SMTP('smtp.gmail.com',587)
+				smtpserver.starttls()
+
+				smtpserver.login(USER,PASSWORD)
+
+				msg = "Subject:RFID box opened\nHello!\n\nYour NFC box has been opened with the JOKER card!"
+				smtpserver.sendmail("RFID_BOX","consolewriteline86@gmail.com",msg)
+
+				smtpserver.quit()
+			elif(nfcId==39583897861 or nfcId==584189945031):
 				# correct RFID
 				#print("OK")
 				
@@ -137,12 +163,23 @@ try:
 					
 					gOFF(LED_G)
 					closed = False
+					
+					# send email
+					smtpserver=smtplib.SMTP('smtp.gmail.com',587)
+					smtpserver.starttls()
+
+					smtpserver.login(USER,PASSWORD)
+
+					msg = "Subject:RFID box opened\nHello!\n\nYour NFC box has been opened! (NFC id = " + str(nfcId) + ")"
+					smtpserver.sendmail("RFID_BOX","consolewriteline86@gmail.com",msg)
+
+					smtpserver.quit()
 				else:
 					# incorrect password
 					gON(LED_R)
 					time.sleep(2)
 					gOFF(LED_R)
-			elif (id == 584195779439):
+			elif (nfcId == 584195779439):
 				# special, exit program card
 				gON(LED_G)
 				time.sleep(1)
@@ -159,10 +196,9 @@ try:
 				gOFF(LED_R)
 		else:
 			# waiting for RFID read
-			id, text = reader.read()
-			
-			if(id == 39583897861 or id == 584189945031):
-				# correct RFID
+			nfcId, text = reader.read()
+			if(nfcId == 39583897861 or nfcId == 584189945031 or nfcId==1019974132615):
+				# correct RFID / joker card
 				gON(LED_G)
 				
 				gON(RELAY)
@@ -171,14 +207,13 @@ try:
 				
 				gOFF(LED_G)
 				closed = True
-			elif (id == 584195779439):
+			elif (nfcId == 584195779439):
 				exit()
 			else:
 				# wrong RFID
 				gON(LED_R)
 				time.sleep(2)
 				gOFF(LED_R)
-except:
-	print("something went wrong")
+
 finally:
 	GPIO.cleanup()
