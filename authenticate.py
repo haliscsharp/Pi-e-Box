@@ -7,6 +7,10 @@ import string, random
 import StringIO, rfc822
 import logging
 import time
+import datetime
+
+# database
+import sqlite3
 
 time.sleep(3)
 
@@ -26,6 +30,8 @@ LED_G=14
 LED_R=18
 
 green=False # keep track of led color
+
+OpenTime=datetime.datetime(1970,01,01,0,0,0) # time of opening (default value for initializing variable)
 
 # initialize GPIO pin
 GPIO.setmode(GPIO.BCM)
@@ -72,6 +78,22 @@ try:
 				
 				closed=False
 				
+				
+				# save to database
+				conn = sqlite3.connect('rfid_box_db.sqlite')
+
+				cur = conn.cursor()
+				
+				openTime=datetime.datetime.now()
+				
+				cur.execute('INSERT INTO BoxOpenings (CardID, Time, OpenInterval) VALUES (?, ?, ?)',
+				            (nfcId, openTime, 0))
+				conn.commit()
+				
+				conn.close()
+				
+				#print('saved')
+				
 				# send email
 				smtpserver=smtplib.SMTP('smtp.gmail.com',587)
 				smtpserver.starttls()
@@ -82,6 +104,9 @@ try:
 				smtpserver.sendmail("RFID_BOX","consolewriteline86@gmail.com",msg)
 
 				smtpserver.quit()
+				
+				#print('sent')
+				
 			elif(nfcId==39583897861 or nfcId==584189945031):
 				# correct RFID
 				#print("OK")
@@ -164,6 +189,23 @@ try:
 					gOFF(LED_G)
 					closed = False
 					
+					
+					# save to database
+					conn = sqlite3.connect('rfid_box_db.sqlite')
+					
+					cur = conn.cursor()
+					
+					openTime=datetime.datetime.now()
+				
+					cur.execute('INSERT INTO BoxOpenings (CardID, Time, OpenInterval) VALUES (?, ?, ?)',
+								(nfcId, openTime, 0))
+					conn.commit()
+					
+					conn.close()
+				
+					#print('saved')
+					
+					
 					# send email
 					smtpserver=smtplib.SMTP('smtp.gmail.com',587)
 					smtpserver.starttls()
@@ -174,6 +216,9 @@ try:
 					smtpserver.sendmail("RFID_BOX","consolewriteline86@gmail.com",msg)
 
 					smtpserver.quit()
+				
+					#print('sent')
+				
 				else:
 					# incorrect password
 					gON(LED_R)
@@ -206,7 +251,22 @@ try:
 				gOFF(RELAY)
 				
 				gOFF(LED_G)
+				
 				closed = True
+				
+				# save to database
+				conn = sqlite3.connect('rfid_box_db.sqlite')
+
+				cur = conn.cursor()
+				
+				cur.execute('UPDATE BoxOpenings SET OpenInterval = ? WHERE Time = ?',
+				            ((datetime.datetime.now()-openTime).total_seconds(), openTime))
+				conn.commit()
+				
+				conn.close()
+				
+				#print('saved')
+				
 			elif (nfcId == 584195779439):
 				exit()
 			else:
