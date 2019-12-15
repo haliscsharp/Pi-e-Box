@@ -80,7 +80,7 @@ try:
 				
 				
 				# save to database
-				conn = sqlite3.connect('rfid_box_db.sqlite')
+				conn = sqlite3.connect('/home/pi/rfid_box_db.sqlite')
 
 				cur = conn.cursor()
 				
@@ -191,7 +191,7 @@ try:
 					
 					
 					# save to database
-					conn = sqlite3.connect('rfid_box_db.sqlite')
+					conn = sqlite3.connect('/home/pi/rfid_box_db.sqlite')
 					
 					cur = conn.cursor()
 					
@@ -255,7 +255,7 @@ try:
 				closed = True
 				
 				# save to database
-				conn = sqlite3.connect('rfid_box_db.sqlite')
+				conn = sqlite3.connect('/home/pi/rfid_box_db.sqlite')
 
 				cur = conn.cursor()
 				

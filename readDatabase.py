@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('rfid_box_db.sqlite')
+conn = sqlite3.connect('/home/pi/rfid_box_db.sqlite')
 
 cur = conn.cursor()
 
